@@ -22,3 +22,5 @@ Imports:
     stats,
     tibble,
     tidyr
+URL: https://github.com/dstanley4/metaplot
+BugReports: https://github.com/dstanley4/metaplot/issues
