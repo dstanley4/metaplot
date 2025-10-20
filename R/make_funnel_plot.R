@@ -122,7 +122,7 @@ make_single_funnel_plot <- function(meta_data,
   )
 
   subtitle_str <- base::sprintf(
-    "%.0f%% of observed correlation variance due to sampling error\nSignificance level: \u03B1 = %.3f",
+    "%.0f%% of observed correlation variance due to sampling error\nSignificance level: alpha = %.3f",
     percent_sampling_error, sig_level
   )
 
