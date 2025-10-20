@@ -17,10 +17,18 @@ make_forest_plot <- function(meta_obj){
   mod_col_name = names(meta_table)[col_number_moderator]
 
   overall_meta_tibble <- tibble::as_tibble(meta_table)
-  overall_meta_tibble <- overall_meta_tibble[seq(from = 1, to = nrow(overall_meta_tibble)), c(6,9,17,18)]
+  if (num_plots> 1) {
+    overall_meta_tibble <- overall_meta_tibble[seq(from = 1, to = nrow(overall_meta_tibble)), c(6,9,17,18)]
+  } else {
+    overall_meta_tibble <- overall_meta_tibble[seq(from = 1, to = nrow(overall_meta_tibble)), c(5,8,16,17)]
+  }
+
   names(overall_meta_tibble) <- c("sample_id", "rxy", "lower_conf_limit_r", "upper_conf_limit_r")
   overall_meta_tibble$moderator <- "Overall"
-  overall_meta_tibble$ypos_value <- c(1,seq(from = nrow(overall_meta_tibble), to = 2, by = -1))
+
+  if (num_plots>2) {
+    overall_meta_tibble$ypos_value <- c(1,seq(from = nrow(overall_meta_tibble), to = 2, by = -1))
+  }
 
 
   meta_info <- psychmeta::get_escalc(meta_obj)
@@ -30,7 +38,11 @@ make_forest_plot <- function(meta_obj){
   for (i in 1:num_plots) {
     mean_r <- meta_table$mean_r[i]
     table_name <- meta_table$analysis_id[i]
-    analysis_name <- as.character(dplyr::pull(meta_table[i,col_number_moderator]))
+    if (num_plots > 1) {
+      analysis_name <- as.character(dplyr::pull(meta_table[i,col_number_moderator]))
+    } else {
+      analysis_name = ""
+    }
 
     meta_data <- meta_info[[i]]$barebones
     plot_data <- meta_data |>
@@ -41,11 +53,14 @@ make_forest_plot <- function(meta_obj){
         !!rlang::sym(names(meta_data)[3]))
 
     plot_data <- add_ci_r(plot_data)
+
     col_names_plot_data <- names(plot_data)
     col_names_plot_data[4] <- "moderator"
     names(plot_data) <- col_names_plot_data
 
-
+    if (num_plots == 1) {
+      plot_data$moderator = as.factor("Studies")
+    }
 
     if (i != 1) {
       overall_plot_meta_tibble <- overall_meta_tibble[i,]
@@ -68,6 +83,10 @@ make_forest_plot <- function(meta_obj){
 make_single_forest_plot <- function(plot_data, analysis_name, overall_meta_tibble) {
   # --- Combine data and prepare facets ---
   plot_data$ypos_value <- seq_len(nrow(plot_data)) + nrow(overall_meta_tibble)
+
+  if (nrow(overall_meta_tibble) == 1) {
+    overall_meta_tibble$ypos_value = 1
+  }
 
   plot_data <- dplyr::bind_rows(plot_data, overall_meta_tibble) |>
     dplyr::mutate(
